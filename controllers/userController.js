@@ -1,5 +1,8 @@
 const User = require("../models/User");
+const Verify = require('../models/Verify');
 const CryptoJS = require("crypto-js");
+const nodemailer = require('nodemailer');
+const smtpTransport = require('nodemailer-smtp-transport');
 
 // GET ME
 const readMe = async (req, res) => {
@@ -100,7 +103,7 @@ const updateUser = async (req, res) => {
 // UPDATE PASSWORD
 const updatePassword = async (req, res) => {
   try {
-    const user = await User.findById(req.user.id).catch(error => {
+    const user = await User.find({ email: req.body.email }).catch(error => {
       return res.status(500).json(error.message)
     })
 
@@ -173,4 +176,70 @@ const remove = async (req, res) => {
   }
 };
 
-module.exports = { readMe, readOne, readAll, updateUser, updatePassword, remove };
+function randomNumber(length) {
+    return Math.floor(Math.pow(10, length - 1) + Math.random() * (Math.pow(10, length) - Math.pow(10, length - 1) - 1));
+}
+
+// CHECK EMAIL
+const checkEmail = async (req, res) => {
+    let code = randomNumber(5);
+    var transporter = nodemailer.createTransport(
+        smtpTransport({
+            service: 'gmail',
+            host: 'smtp.gmail.com',
+            auth: {
+                user: 'ginkutin1999@gmail.com',
+                pass: 'muthlxcuxmnxaama'
+            }
+        })
+    );
+
+    var mailOptions = {
+        from: 'ginkutin1999@gmail.com',
+        to: req.body.email,
+        subject: 'Verify email from Stock Market',
+        text: code.toString()
+    };
+
+    transporter.sendMail(mailOptions, async function (error, info) {
+        if (error) {
+            res.status(500).json(error.message);
+        } else {
+            const newVerify = new Verify({email: req.body.email, code: code});
+            try {
+                await newVerify
+                    .save()
+                    .then(() => {
+                        return res.status(200).json({status: 1, message: 'Sent verify code, Please check your email!'});
+                    })
+                    .catch(error => {
+                        return res.status(400).json(error);
+                    });
+            } catch (error) {
+                return res
+                    .status(500)
+                    .json({status: -1, message: 'server error', error});
+            }
+        }
+    });
+};
+
+// CHECK VERIFY CODE
+const checkVerifyCode = async (req, res) => {
+    try {
+        const verify = await Verify.find({email: req.query.email, code: parseInt(req.query.code)});
+        if (!verify.length) {
+            res.status(404).json({status: 0, message: false});
+        } else {
+            res.status(200).json({status: 1, message: true});
+        }
+    } catch (error) {
+        res.json({
+            status: -1,
+            message: 'Server error',
+            error: error.message
+        });
+    }
+}
+
+module.exports = {readMe, readOne, readAll, updateUser, updatePassword, remove, checkEmail, checkVerifyCode};
