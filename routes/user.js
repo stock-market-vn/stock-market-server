@@ -1,5 +1,5 @@
 const router = require("express").Router();
-const { readMe, readAll, readOne, updateUser, updatePassword, remove } = require("../controllers/userController.js")
+const { readMe, readAll, readOne, updateUser, updatePassword, remove, checkEmail, checkVerifyCode } = require("../controllers/userController.js")
 const { unFollow, follow } = require("../controllers/followController.js")
 const { verifyToken, verifyTokenAndAuthorization, verifyTokenAndAdmin } = require("../controllers/verifyTokenController.js")
 
@@ -26,5 +26,11 @@ router.post("/follow-user", verifyToken, follow);
 
 // UNFOLLOW USER
 router.post("/unfollow-user", verifyToken, unFollow);
+
+// CHECK EMAIL
+router.post("/email", checkEmail);
+
+// CHECK VERIFY CODE
+router.get("/email/verify", checkVerifyCode);
 
 module.exports = router
