@@ -18,7 +18,7 @@ const readMe = async (req, res) => {
 const readAll = async (req, res) => {
   try {
     if (req.user == undefined || !req.user.isAdmin) {
-      const users = await User.find({}, '-password -isAdmin');
+      const users = await User.find({}, '-password');
       return res.status(200).json(users);
     } else if (req.user.isAdmin) {
       const users = await User.find();

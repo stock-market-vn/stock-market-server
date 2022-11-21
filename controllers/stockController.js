@@ -32,9 +32,10 @@ const readAll = async (req, res) => {
 
 const findStockToday = async (req, res) => {
     try {
-        await Stock.find({ Date: new Date("2022-10-26T00:00:00.000Z") })
+        await Stock.find({})
             .then((stocks) => {
-                return res.status(200).json(stocks);
+                const stocksToday = stocks.filter((item) => item?.date?.getTime() === new Date('2022-11-18T00:00:00.000Z').getTime())
+                return res.status(200).json(stocksToday);
             })
             .catch((error) => {
                 return res.status(404).json({ message: "Stocks are non-existence", error });
@@ -83,5 +84,6 @@ const readOne = async (req, res) => {
         return res.status(500).json({ status: -1, message: "Server error", error });
     }
 };
+
 
 module.exports = { readOne, readAll, findStockToday, findOneYear };
