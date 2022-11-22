@@ -110,7 +110,7 @@ const remove = async (req, res) => {
     await Post.findByIdAndDelete(req.params.id)
       .then((post) => {
         res.status(200).json({
-          status: 1, message: `Post ${req.params.id} delete successfully`
+          status: 1, message: `Delete successfully`
         })
       })
       .catch(error => {

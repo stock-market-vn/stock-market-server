@@ -62,23 +62,52 @@ const readOne = async (req, res) => {
 // UPDATE USER
 const updateUser = async (req, res) => {
   try {
-    if (!req.user.isAdmin) {
-      data = {
-        name: req.body.name,
-        phone: req.body.phone,
-        email: req.body.email,
-        avatar: req.body.avatar,
-      }
-    } else {
-      data = req.body
+    data = {
+      name: req?.body?.name,
+      phone: req?.body?.phone,
+      email: req?.body?.email,
+      avatar: req?.body?.avatar,
     }
-
+    const id = req.user.id;
+    console.log("id", id);
     await User.findByIdAndUpdate(
-      req.user.id,
+      id,
       { $set: data },
       {
         new: true,
-        select: { password: 0 }
+      },
+    )
+      .then((user) => {
+        res
+          .status(200)
+          .json({ status: 1, user, message: `update successfully` });
+      })
+      .catch((error) => {
+        res
+          .status(404)
+          .json({ status: 0, message: "User-id is non-existence", error });
+      });
+  } catch (error) {
+    error.json({
+      status: -1,
+      message: "Server error",
+      error: error.message,
+    });
+  }
+};
+
+// UPDATE USER
+const updateIsAdmin = async (req, res) => {
+  try {
+    const id = req.body.id;
+    data = {
+      isAdmin: req.body.isAdmin,
+    }
+    await User.findByIdAndUpdate(
+      id,
+      { $set: data },
+      {
+        new: true,
       },
     )
       .then((user) => {
@@ -158,7 +187,7 @@ const remove = async (req, res) => {
       .then((user) => {
         res
           .status(200)
-          .json({ status: 1, message: `User ${req.params.id} delete successfully` });
+          .json({ status: 1, message: `Delete successfully` });
       })
       .catch(error => {
         res.status(404).json({
@@ -177,69 +206,96 @@ const remove = async (req, res) => {
 };
 
 function randomNumber(length) {
-    return Math.floor(Math.pow(10, length - 1) + Math.random() * (Math.pow(10, length) - Math.pow(10, length - 1) - 1));
+  return Math.floor(Math.pow(10, length - 1) + Math.random() * (Math.pow(10, length) - Math.pow(10, length - 1) - 1));
 }
 
 // CHECK EMAIL
 const checkEmail = async (req, res) => {
-    let code = randomNumber(5);
-    var transporter = nodemailer.createTransport(
-        smtpTransport({
-            service: 'gmail',
-            host: 'smtp.gmail.com',
-            auth: {
-                user: 'ginkutin1999@gmail.com',
-                pass: 'muthlxcuxmnxaama'
-            }
-        })
-    );
+  let code = randomNumber(5);
+  var transporter = nodemailer.createTransport(
+    smtpTransport({
+      service: 'gmail',
+      host: 'smtp.gmail.com',
+      auth: {
+        user: 'ginkutin1999@gmail.com',
+        pass: 'muthlxcuxmnxaama'
+      }
+    })
+  );
 
-    var mailOptions = {
-        from: 'ginkutin1999@gmail.com',
-        to: req.body.email,
-        subject: 'Verify email from Stock Market',
-        text: code.toString()
-    };
+  var mailOptions = {
+    from: 'ginkutin1999@gmail.com',
+    to: req.body.email,
+    subject: 'Verify email from Stock Market',
+    text: code.toString()
+  };
 
-    transporter.sendMail(mailOptions, async function (error, info) {
-        if (error) {
-            res.status(500).json(error.message);
-        } else {
-            const newVerify = new Verify({email: req.body.email, code: code});
-            try {
-                await newVerify
-                    .save()
-                    .then(() => {
-                        return res.status(200).json({status: 1, message: 'Sent verify code, Please check your email!'});
-                    })
-                    .catch(error => {
-                        return res.status(400).json(error);
-                    });
-            } catch (error) {
-                return res
-                    .status(500)
-                    .json({status: -1, message: 'server error', error});
-            }
-        }
-    });
+  transporter.sendMail(mailOptions, async function (error, info) {
+    if (error) {
+      res.status(500).json(error.message);
+    } else {
+      const newVerify = new Verify({ email: req.body.email, code: code });
+      try {
+        await newVerify
+          .save()
+          .then(() => {
+            return res.status(200).json({ status: 1, message: 'Sent verify code, Please check your email!' });
+          })
+          .catch(error => {
+            return res.status(400).json(error);
+          });
+      } catch (error) {
+        return res
+          .status(500)
+          .json({ status: -1, message: 'server error', error });
+      }
+    }
+  });
 };
 
 // CHECK VERIFY CODE
 const checkVerifyCode = async (req, res) => {
-    try {
-        const verify = await Verify.find({email: req.query.email, code: parseInt(req.query.code)});
-        if (!verify.length) {
-            res.status(404).json({status: 0, message: false});
-        } else {
-            res.status(200).json({status: 1, message: true});
-        }
-    } catch (error) {
-        res.json({
-            status: -1,
-            message: 'Server error',
-            error: error.message
-        });
+  try {
+    const verify = await Verify.find({ email: req.query.email, code: parseInt(req.query.code) });
+    if (!verify.length) {
+      res.status(404).json({ status: 0, message: false });
+    } else {
+      res.status(200).json({ status: 1, message: true });
     }
+  } catch (error) {
+    res.json({
+      status: -1,
+      message: 'Server error',
+      error: error.message
+    });
+  }
 }
 
-module.exports = {readMe, readOne, readAll, updateUser, updatePassword, remove, checkEmail, checkVerifyCode};
+const addNewUser = async (req, res) => {
+  const newUser = new User({
+    name: req.body.name,
+    phone: req.body.phone,
+    email: req.body.email,
+    avatar: req.body.avatar,
+    password: CryptoJS.AES.encrypt(
+      req.body.password,
+      process.env.PASS_SEC
+    ).toString(),
+    isAdmin: req.body.isAdmin,
+  });
+
+  try {
+    await newUser
+      .save()
+      .then((savedUser) => {
+        res.status(201).json(savedUser);
+      })
+      .catch((error) => {
+        res.status(400).json({ message: "Account already exists" })
+      });
+  } catch (error) {
+    res.status(500).json({ status: -1, message: "server error", error });
+  }
+}
+
+module.exports = { readMe, readOne, readAll, updateUser, updatePassword, remove, checkEmail, checkVerifyCode, addNewUser, updateIsAdmin };
