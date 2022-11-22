@@ -41,7 +41,7 @@ const PORT = process.env.PORT || 3000;
 route(app);
 
 app.post('/uploadStockCSV', uploads.single('csvFile'), (req, res) => {
-  // console.log(req)
+
   csv()
     .fromFile(req?.file?.path)
     .then((response) => {
