@@ -14,8 +14,11 @@ router.get("/:id", readOne);
 // UPDATE A USER BY ID
 router.put("/updateProfile", verifyToken, updateUser);
 
-// UPDATE A USER BY ID
+// UPDATE pasword
 router.put("/updatePassword", verifyToken, updatePassword);
+
+// Forgot pass
+router.put("/updatePasswordWhenForgot", updatePassword);
 
 // DELET A USER
 router.delete("/:id", verifyTokenAndAuthorization, remove);

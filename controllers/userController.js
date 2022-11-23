@@ -7,7 +7,7 @@ const smtpTransport = require('nodemailer-smtp-transport');
 // GET ME
 const readMe = async (req, res) => {
   try {
-    const user = await User.findById(req.user.id, '-password -isAdmin')
+    const user = await User.findById(req.user.id, '-isAdmin')
     return res.status(200).json(user)
   } catch (error) {
     res.status(500).json(error);
@@ -132,20 +132,19 @@ const updateIsAdmin = async (req, res) => {
 // UPDATE PASSWORD
 const updatePassword = async (req, res) => {
   try {
-    const user = await User.find({ email: req.body.email }).catch(error => {
-      return res.status(500).json(error.message)
-    })
-
-    const hashedPassord = CryptoJS.AES.decrypt(
-      user.password,
-      process.env.PASS_SEC
-    );
-
-    const originalPassword = hashedPassord.toString(CryptoJS.enc.Utf8);
-
-    if (originalPassword !== req.body.oldPassword)
-      return res.status(401).json({ status: 0, message: "OldPassword is incorect!" });
-
+    let user = null;
+    if (req.body.email) {
+      let users = await User.find({ email: req.body.email }).catch(error => {
+        res.status(404).json({ status: 0, message: "Email is non-existence", error });
+      })
+      user = users[0]
+    }
+    let id = null;
+    if (user) {
+      id = user._id;
+    } else {
+      id = req.body.id;
+    }
     data = {
       password: CryptoJS.AES.encrypt(
         req.body.newPassword,
@@ -154,7 +153,7 @@ const updatePassword = async (req, res) => {
     }
 
     await User.findByIdAndUpdate(
-      req.user.id,
+      id,
       { $set: data },
       {
         new: true,
@@ -164,7 +163,7 @@ const updatePassword = async (req, res) => {
       .then((user) => {
         res
           .status(200)
-          .json({ status: 1, user, message: `update successfully` });
+          .json({ status: 1, user, message: `Update password successfully` });
       })
       .catch((error) => {
         res
@@ -172,11 +171,7 @@ const updatePassword = async (req, res) => {
           .json({ status: 0, message: "User-id is non-existence", error });
       });
   } catch (error) {
-    error.json({
-      status: -1,
-      message: "Server error",
-      error: error.message,
-    });
+    res.status(500).json({ status: 0, message: "Server error", error });
   }
 };
 
