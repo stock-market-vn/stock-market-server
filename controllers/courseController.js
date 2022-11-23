@@ -9,7 +9,7 @@ const create = async (req, res) => {
     title: req.body.title,
     description: req.body.description,
     urlBanner: req.body.urlBanner,
-    ada: req.body.ada,
+    urlCourse: req.body.urlCourse,
   });
 
   const error = newCourse.validateSync();
@@ -84,10 +84,13 @@ const readOne = async (req, res) => {
 
 const update = async (req, res) => {
   const course = {
+    categoryId: req.body.categoryId,
+    authorName: req.user.name,
+    authorAvatar: req.user.avatar,
     title: req.body.title,
-    content: req.body.content,
-    url: req.body.url,
-    image: req.body.image,
+    description: req.body.description,
+    urlBanner: req.body.urlBanner,
+    urlCourse: req.body.urlCourse,
   };
 
   try {
@@ -128,76 +131,4 @@ const remove = async (req, res) => {
   }
 };
 
-const join = async (req, res) => {
-  try {
-    const course = await Course.findByIdAndUpdate(req.body.idCourse, {
-      $addToSet: { users: req.user.id },
-    })
-      .then((course) => {
-        return course;
-      })
-      .catch((error) => {
-        return res.status(400).json(error);
-      });
-    if (course) {
-      await User.findByIdAndUpdate(
-        req.user.id,
-        {
-          $addToSet: { courses: req.body.idCourse },
-        },
-        {
-          new: true,
-          select: { isAdmin: 0, password: 0 },
-        }
-      )
-        .then((user) => {
-          return res.status(200).json(user);
-        })
-        .catch((error) => {
-          return res.status(400).json(error);
-        });
-    } else {
-      return res.status(400).json(error);
-    }
-  } catch (error) {
-    res.status(500).json(error);
-  }
-};
-
-const unJoin = async (req, res) => {
-  try {
-    const course = await Course.findByIdAndUpdate(req.body.idCourse, {
-      $pull: { users: req.user.id },
-    })
-      .then((course) => {
-        return course;
-      })
-      .catch((error) => {
-        return res.status(400).json(error);
-      });
-    if (course) {
-      await User.findByIdAndUpdate(
-        req.user.id,
-        {
-          $pull: { courses: req.body.idCourse },
-        },
-        {
-          new: true,
-          select: { isAdmin: 0, password: 0 },
-        }
-      )
-        .then((user) => {
-          return res.status(200).json(user);
-        })
-        .catch((error) => {
-          return res.status(400).json(error);
-        });
-    } else {
-      return res.status(400).json(error);
-    }
-  } catch (error) {
-    res.status(500).json(error);
-  }
-};
-
-module.exports = { create, readAll, findList, readOne, update, remove, join, unJoin };
+module.exports = { create, readAll, findList, readOne, update, remove};

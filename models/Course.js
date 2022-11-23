@@ -8,7 +8,7 @@ const CourseSchema = new mongoose.Schema(
     title: { type: String, required: true },
     description: { type: String, require: true },
     urlBanner: { type: String, require: true },
-    ada: { type: String, require: true },
+    urlCourse: { type: String, require: true },
   },
   { timestamps: true }
 );
