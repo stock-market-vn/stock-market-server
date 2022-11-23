@@ -33,6 +33,6 @@ router.put("/updateIsAdmin", verifyTokenAndAuthorization, updateIsAdmin);
 router.post("/email", checkEmail);
 
 // CHECK VERIFY CODE
-router.get("/email/verify", checkVerifyCode);
+router.post("/email/verify", checkVerifyCode);
 
 module.exports = router

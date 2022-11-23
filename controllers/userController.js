@@ -251,11 +251,11 @@ const checkEmail = async (req, res) => {
 // CHECK VERIFY CODE
 const checkVerifyCode = async (req, res) => {
   try {
-    const verify = await Verify.find({ email: req.query.email, code: parseInt(req.query.code) });
-    if (!verify.length) {
-      res.status(404).json({ status: 0, message: false });
-    } else {
+    const results = await Verify.find({ email: req.body.email, code: parseInt(req.body.code) });
+    if (results[0]) {
       res.status(200).json({ status: 1, message: true });
+    } else {
+      res.status(200).json({ status: 0, message: false });
     }
   } catch (error) {
     res.json({
