@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 
 const CourseSchema = new mongoose.Schema(
   {
-    categoryId: { type: mongoose.Schema.ObjectId, ref: "Category", unique: true },
+    categoryId: { type: String, ref: "Category", unique: false },
     authorName: {type: String, required: true},
     authorAvatar: {type: String, required: true},
     title: { type: String, required: true },

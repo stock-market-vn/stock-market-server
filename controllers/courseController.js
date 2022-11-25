@@ -1,22 +1,15 @@
 const Course = require("../models/Course.js");
-const User = require("../models/User.js");
 
 const create = async (req, res) => {
   const newCourse = Course({
     categoryId: req.body.categoryId,
-    authorName: req.user.name,
-    authorAvatar: req.user.avatar,
+    authorName: req.body.authorName,
+    authorAvatar: req.body.authorAvatar,
     title: req.body.title,
     description: req.body.description,
     urlBanner: req.body.urlBanner,
     urlCourse: req.body.urlCourse,
   });
-
-  const error = newCourse.validateSync();
-
-  if (error) {
-    return res.status(400).json(error);
-  } else {
     try {
       await newCourse
         .save()
@@ -28,12 +21,12 @@ const create = async (req, res) => {
           });
         })
         .catch((error) => {
+          console.log(error);
           return res.status(400).json(error.message);
         });
     } catch (error) {
       return res.status(501).json(error);
     }
-  }
 };
 
 const readAll = async (req, res) => {

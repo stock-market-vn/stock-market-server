@@ -34,7 +34,7 @@ const findStockToday = async (req, res) => {
     try {
         await Stock.find({})
             .then((stocks) => {
-                const stocksToday = stocks.filter((item) => item?.date?.getTime() === new Date('2022-11-18T00:00:00.000Z').getTime())
+                const stocksToday = stocks.filter((item) => item?.date?.getTime() === new Date('2022-11-24T00:00:00.000Z').getTime())
                 return res.status(200).json(stocksToday);
             })
             .catch((error) => {

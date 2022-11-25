@@ -7,6 +7,7 @@ const categoryRouter = require("./category.js");
 const stockRouter = require("./stock.js");
 const detailStockRouter = require("./detailStock.js");
 const watchListRouter = require("./watchList.js");
+const stockTodayRouter = require("./stockToday.js");
 
 function route(app) {
   app.use("/users", authRouter);
@@ -18,6 +19,7 @@ function route(app) {
   app.use("/stocks", stockRouter);
   app.use("/detail-stocks", detailStockRouter);
   app.use("/watch-list", watchListRouter);
+  app.use("/stocks-today", stockTodayRouter);
 }
 
 module.exports = route;

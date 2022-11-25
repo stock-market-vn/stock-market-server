@@ -7,6 +7,7 @@ const swaggerUI = require("swagger-ui-express");
 var compression = require('compression')
 var bodyParser = require('body-parser')
 var Stock = require('./models/Stock')
+var StockToday = require('./models/StockToday')
 var csv = require('csvtojson')
 
 const route = require("./routes/");
@@ -57,8 +58,19 @@ app.post('/uploadStockCSV', uploads.single('csvFile'), (req, res) => {
             volume: Number(item?.volume || 0),
             date: new Date(item?.date),
           });
+          const newStockToday = new StockToday({
+            symbol: item?.symbol,
+            open: Number(item?.open || 0),
+            close: Number(item?.close || 0),
+            high: Number(item?.high || 0),
+            low: Number(item?.low || 0),
+            volume: Number(item?.volume || 0),
+            date: new Date(item?.date),
+          });
           try {
-            await newStock.save()
+            await newStock.save();
+            await StockToday.remove({});
+            await newStockToday.save();
           } catch (error) {
             console.log(error);
           }
