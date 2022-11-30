@@ -43,8 +43,8 @@ const login = async (req, res, next) => {
 
         const originalPassword = hashedPassword.toString(CryptoJS.enc.Utf8);
 
-        // originalPassword !== req.body.password &&
-        //   res.status(401).json({ status: 0, message: "Wrong credentials!" });
+        originalPassword !== req.body.password &&
+          res.status(401).json({ status: 0, message: "Wrong credentials!" });
 
         const accessToken = jwt.sign(
           {
