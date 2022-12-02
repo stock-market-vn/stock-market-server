@@ -22,7 +22,7 @@ const register = async (req, res) => {
         res.status(201).json(savedUser);
       })
       .catch((error) => {
-        res.status(204).json({ message: "Account already exists" })
+        res.status(401).json({ status: 0, message: "Account already exists" })
       });
   } catch (error) {
     res.status(500).json({ status: -1, message: "server error", error });
@@ -44,7 +44,7 @@ const login = async (req, res, next) => {
           const originalPassword = hashedPassword.toString(CryptoJS.enc.Utf8);
 
           originalPassword !== req.body.password &&
-            res.status(204).json({ status: 0, message: "Wrong password!" });
+            res.status(401).json({ status: 0, message: "Wrong password!" });
 
           const accessToken = jwt.sign(
             {
@@ -71,12 +71,12 @@ const login = async (req, res, next) => {
             .status(200)
             .json({ user: { _id, ...orther }, accessToken });
         } else {
-          res.status(204).json({ status: 0, message: "Email is not registered!", error });
+          res.status(401).json({ status: 0, message: "Email is not registered!", error });
         }
       })
       .catch((error) => {
         return res
-          .status(204)
+          .status(401)
           .json({ status: 0, message: "Email is not registered!", error });
       });
   } catch (error) {
